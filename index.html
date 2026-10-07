@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connection Privacy Checker</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f7f6;
+            margin: 0;
+            padding: 40px 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 80vh;
+        }
+        .card {
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            padding: 30px;
+            max-width: 450px;
+            width: 100%;
+            text-align: center;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 25px;
+            font-size: 1.5rem;
+        }
+        .data-label {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .data-value {
+            font-size: 1.25rem;
+            font-weight: bold;
+            color: #111;
+            margin-bottom: 25px;
+            word-break: break-all;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 0.95rem;
+        }
+        .loading { background-color: #e0e0e0; color: #555; }
+        .secure { background-color: #d4edda; color: #155724; }
+        .warning { background-color: #fff3cd; color: #856404; }
+        .danger { background-color: #f8d7da; color: #721c24; }
+    </style>
+</head>
+<body>
+
+    <div class="card">
+        <h1>Network Connection Status</h1>
+        
+        <div class="data-label">Your IP Address</div>
+        <div id="ip-display" class="data-value">Detecting...</div>
+        
+        <div class="data-label">Location</div>
+        <div id="location-display" class="data-value">Detecting...</div>
+        
+        <div class="data-label">Privacy Detection</div>
+        <div>
+            <span id="vpn-status" class="status-badge loading">Analyzing Network...</span>
+        </div>
+    </div>
+
+    <script>
+        // Updated with the official API endpoint path
+        fetch('https://free.freeipapi.com/api/v1/json')
+            .then(response => response.json())
+            .then(data => {
+                // Update text displays based on current API return keys
+                document.getElementById('ip-display').textContent = data.ipAddress;
+                document.getElementById('location-display').textContent = `${data.cityName}, ${data.regionName}, ${data.countryName}`;
+
+                const statusBadge = document.getElementById('vpn-status');
+                
+                // Read privacy flags directly from the API response
+                const isProxyOrVpn = data.isProxy; 
+                
+                if (isProxyOrVpn) {
+                    statusBadge.textContent = "🔒 VPN / Proxy Detected";
+                    statusBadge.className = "status-badge danger";
+                } else {
+                    statusBadge.textContent = "🌐 Standard Connection (No VPN)";
+                    statusBadge.className = "status-badge secure";
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching data:', error);
+                document.getElementById('ip-display').textContent = 'API Error';
+                document.getElementById('location-display').textContent = 'API Error';
+                
+                const statusBadge = document.getElementById('vpn-status');
+                statusBadge.textContent = "Unable to verify";
+                statusBadge.className = "status-badge loading";
+            });
+    </script>
+
+</body>
+</html>
